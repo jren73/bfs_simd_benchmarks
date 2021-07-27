@@ -18,15 +18,15 @@ using std::endl;
 using std::to_string;
 using std::vector;
 
-unsigned NNODES;
-unsigned NEDGES;
-unsigned NUM_THREADS;
-unsigned TILE_WIDTH; // Width of tile
-unsigned SIDE_LENGTH; // Number of rows of tiles
-unsigned NUM_TILES; // Number of tiles
-unsigned ROW_STEP; // Number of rows of tiles in a Group
+unsigned long long NNODES;
+unsigned long long NEDGES;
+unsigned long long NUM_THREADS;
+unsigned long long TILE_WIDTH; // Width of tile
+unsigned long long SIDE_LENGTH; // Number of rows of tiles
+unsigned long long NUM_TILES; // Number of tiles
+unsigned long long ROW_STEP; // Number of rows of tiles in a Group
 
-unsigned KCORE;
+unsigned long long KCORE;
 
 double start;
 double now;
@@ -35,11 +35,11 @@ char *time_file = "timeline.txt";
 
 void input_weighted(
 		char filename[], 
-		unsigned *&graph_heads, 
-		unsigned *&graph_ends, 
-		unsigned *&graph_weights,
-		unsigned *&tile_offsets,
-		unsigned *&nneibor,
+		unsigned long long *&graph_heads, 
+		unsigned long long *&graph_ends, 
+		unsigned long long *&graph_weights,
+		unsigned long long *&tile_offsets,
+		unsigned long long *&nneibor,
 		int *&is_empty_tile) 
 {
 	//printf("data: %s\n", filename);
@@ -51,7 +51,7 @@ void input_weighted(
 		fprintf(stderr, "Error: cannot open file %s.\n", fname.c_str());
 		exit(1);
 	}
-	fscanf(fin, "%u %u", &NNODES, &NEDGES);
+	fscanf(fin, "%llu %llu", &NNODES, &NEDGES);
 	fclose(fin);
 	if (NNODES % TILE_WIDTH) {
 		SIDE_LENGTH = NNODES / TILE_WIDTH + 1;
@@ -66,11 +66,11 @@ void input_weighted(
 		fprintf(stderr, "cannot open file: %s\n", fname.c_str());
 		exit(1);
 	}
-	tile_offsets = (unsigned *) malloc(NUM_TILES * sizeof(unsigned));
+	tile_offsets = (unsigned long long *) malloc(NUM_TILES * sizeof(unsigned long long));
 	for (unsigned i = 0; i < NUM_TILES; ++i) {
-		//fscanf(fin, "%u", tile_offsets + i);
-		unsigned offset;
-		fscanf(fin, "%u", &offset);
+		//fscanf(fin, "%llu", tile_offsets + i);
+		unsigned long long offset;
+		fscanf(fin, "%llu", &offset);
 		tile_offsets[i] = offset;
 	}
 	fclose(fin);
@@ -81,15 +81,15 @@ void input_weighted(
 		fprintf(stderr, "cannot open file: %s\n", fname.c_str());
 		exit(1);
 	}
-	nneibor = (unsigned *) malloc(NNODES * sizeof(unsigned));
-	for (unsigned i = 0; i < NNODES; ++i) {
-		fscanf(fin, "%u", nneibor + i);
+	nneibor = (unsigned long long *) malloc(NNODES * sizeof(unsigned long long));
+	for (unsigned long long i = 0; i < NNODES; ++i) {
+		fscanf(fin, "%llu", nneibor + i);
 	}
 	fclose(fin);
 
-	graph_heads = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	graph_ends = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	graph_weights = (unsigned *) malloc(NEDGES * sizeof(unsigned));
+	graph_heads = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	graph_ends = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	graph_weights = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
 	is_empty_tile = (int *) malloc(sizeof(int) * NUM_TILES);
 	memset(is_empty_tile, 0, sizeof(int) * NUM_TILES);
 	for (unsigned i = 0; i < NUM_TILES; ++i) {
@@ -108,7 +108,7 @@ void input_weighted(
 #pragma omp parallel num_threads(NUM_THREADS) private(fname, fin)
 {
 	unsigned tid = omp_get_thread_num();
-	unsigned offset = tid * edge_bound;
+	unsigned long long offset = tid * edge_bound;
 	fname = prefix + "-" + to_string(tid);
 	fin = fopen(fname.c_str(), "r");
 	if (!fin) {
@@ -116,19 +116,19 @@ void input_weighted(
 		exit(1);
 	}
 	if (0 == tid) {
-		fscanf(fin, "%u %u\n", &NNODES, &NEDGES);
+		fscanf(fin, "%llu %llu\n", &NNODES, &NEDGES);
 	}
-	unsigned bound_index;
+	unsigned long long bound_index;
 	if (NUM_THREADS - 1 != tid) {
 		bound_index = offset + edge_bound;
 	} else {
 		bound_index = NEDGES;
 	}
-	for (unsigned index = offset; index < bound_index; ++index) {
-		unsigned n1;
-		unsigned n2;
-		unsigned wt;
-		fscanf(fin, "%u %u %u", &n1, &n2, &wt);
+	for (unsigned long long index = offset; index < bound_index; ++index) {
+		unsigned long long n1;
+		unsigned long long n2;
+		unsigned long long wt;
+		fscanf(fin, "%llu %llu %llu", &n1, &n2, &wt);
 		n1--;
 		n2--;
 		graph_heads[index] = n1;
@@ -142,10 +142,10 @@ void input_weighted(
 
 void input(
 		char filename[], 
-		unsigned *&graph_heads, 
-		unsigned *&graph_ends, 
-		unsigned *&tile_offsets,
-		unsigned *&nneibor,
+		unsigned long long *&graph_heads, 
+		unsigned long long *&graph_ends, 
+		unsigned long long *&tile_offsets,
+		unsigned long long *&nneibor,
 		int *&is_empty_tile) 
 {
 	//printf("data: %s\n", filename);
@@ -157,7 +157,7 @@ void input(
 		fprintf(stderr, "Error: cannot open file %s.\n", fname.c_str());
 		exit(1);
 	}
-	fscanf(fin, "%u %u", &NNODES, &NEDGES);
+	fscanf(fin, "%llu %llu", &NNODES, &NEDGES);
 	fclose(fin);
 	if (NNODES % TILE_WIDTH) {
 		SIDE_LENGTH = NNODES / TILE_WIDTH + 1;
@@ -172,11 +172,11 @@ void input(
 		fprintf(stderr, "cannot open file: %s\n", fname.c_str());
 		exit(1);
 	}
-	tile_offsets = (unsigned *) malloc(NUM_TILES * sizeof(unsigned));
-	for (unsigned i = 0; i < NUM_TILES; ++i) {
-		//fscanf(fin, "%u", tile_offsets + i);
-		unsigned offset;
-		fscanf(fin, "%u", &offset);
+	tile_offsets = (unsigned long long *) malloc(NUM_TILES * sizeof(unsigned long long));
+	for (unsigned long long i = 0; i < NUM_TILES; ++i) {
+		//fscanf(fin, "%llu", tile_offsets + i);
+		unsigned long long offset;
+		fscanf(fin, "%llu", &offset);
 		tile_offsets[i] = offset;
 	}
 	fclose(fin);
@@ -187,17 +187,17 @@ void input(
 		fprintf(stderr, "cannot open file: %s\n", fname.c_str());
 		exit(1);
 	}
-	nneibor = (unsigned *) malloc(NNODES * sizeof(unsigned));
-	for (unsigned i = 0; i < NNODES; ++i) {
-		fscanf(fin, "%u", nneibor + i);
+	nneibor = (unsigned long long *) malloc(NNODES * sizeof(unsigned long long));
+	for (unsigned long long i = 0; i < NNODES; ++i) {
+		fscanf(fin, "%llu", nneibor + i);
 	}
 	fclose(fin);
 
-	graph_heads = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	graph_ends = (unsigned *) malloc(NEDGES * sizeof(unsigned));
+	graph_heads = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	graph_ends = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
 	is_empty_tile = (int *) malloc(sizeof(int) * NUM_TILES);
 	memset(is_empty_tile, 0, sizeof(int) * NUM_TILES);
-	for (unsigned i = 0; i < NUM_TILES; ++i) {
+	for (unsigned long long i = 0; i < NUM_TILES; ++i) {
 		if (NUM_TILES - 1 != i) {
 			if (tile_offsets[i] == tile_offsets[i + 1]) {
 				is_empty_tile[i] = 1;
@@ -209,11 +209,11 @@ void input(
 		}
 	}
 	NUM_THREADS = 64;
-	unsigned edge_bound = NEDGES / NUM_THREADS;
+	unsigned long long edge_bound = NEDGES / NUM_THREADS;
 #pragma omp parallel num_threads(NUM_THREADS) private(fname, fin)
 {
-	unsigned tid = omp_get_thread_num();
-	unsigned offset = tid * edge_bound;
+	unsigned long long tid = omp_get_thread_num();
+	unsigned long long offset = tid * edge_bound;
 	fname = prefix + "-" + to_string(tid);
 	fin = fopen(fname.c_str(), "r");
 	if (!fin) {
@@ -221,18 +221,22 @@ void input(
 		exit(1);
 	}
 	if (0 == tid) {
-		fscanf(fin, "%u %u\n", &NNODES, &NEDGES);
+		fscanf(fin, "%llu %llu\n", &NNODES, &NEDGES);
 	}
-	unsigned bound_index;
+	unsigned long long bound_index;
 	if (NUM_THREADS - 1 != tid) {
 		bound_index = offset + edge_bound;
 	} else {
 		bound_index = NEDGES;
 	}
-	for (unsigned index = offset; index < bound_index; ++index) {
-		unsigned n1;
-		unsigned n2;
-		fscanf(fin, "%u %u", &n1, &n2);
+	for (unsigned long long index = offset; index < bound_index; ++index) {
+		unsigned long long n1;
+		unsigned long long n2;
+		fscanf(fin, "%llu %llu", &n1, &n2);
+		if(n1==0)
+		  n1++;
+		if(n2==0)
+		  n2++;
 		n1--;
 		n2--;
 		graph_heads[index] = n1;
@@ -245,36 +249,36 @@ void input(
 
 void convert_to_col_major_weight(
 						char *filename,
-						unsigned *graph_heads, 
-						unsigned *graph_ends, 
-						unsigned *graph_weights,
-						unsigned *tile_offsets,
-						unsigned *nneibor)
+						unsigned long long *graph_heads, 
+						unsigned long long *graph_ends, 
+						unsigned long long *graph_weights,
+						unsigned long long *tile_offsets,
+						unsigned long long *nneibor)
 {
-	unsigned *new_heads = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	unsigned *new_ends = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	unsigned *new_weights = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	unsigned *new_offsets = (unsigned *) malloc(NUM_TILES * sizeof(unsigned));
-	//unsigned step = 16;
-	//unsigned step = 2;//test
-	unsigned edge_index = 0;
-	unsigned new_tile_id = 0;
-	unsigned side_i = 0;
+	unsigned long long *new_heads = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	unsigned long long *new_ends = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	unsigned long long *new_weights = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	unsigned long long *new_offsets = (unsigned long long *) malloc(NUM_TILES * sizeof(unsigned long long));
+	//unsigned long long step = 16;
+	//unsigned long long step = 2;//test
+	unsigned long long edge_index = 0;
+	unsigned long long new_tile_id = 0;
+	unsigned long long side_i = 0;
 
 	printf("Converting...\n");
 
 	for (side_i = 0; side_i + ROW_STEP <= SIDE_LENGTH; side_i += ROW_STEP) {
-		for (unsigned col = 0; col < SIDE_LENGTH; ++col) {
-			for (unsigned row = side_i; row < side_i + ROW_STEP; ++row) {
-				unsigned tile_id = row * SIDE_LENGTH + col;
-				unsigned bound_edge_i;
+		for (unsigned long long col = 0; col < SIDE_LENGTH; ++col) {
+			for (unsigned long long row = side_i; row < side_i + ROW_STEP; ++row) {
+				unsigned long long tile_id = row * SIDE_LENGTH + col;
+				unsigned long long bound_edge_i;
 				if (NUM_TILES - 1 != tile_id) {
 					bound_edge_i = tile_offsets[tile_id + 1];
 				} else {
 					bound_edge_i = NEDGES;
 				}
 				new_offsets[new_tile_id++] = edge_index;
-				for (unsigned edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
+				for (unsigned long long edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
 					new_heads[edge_index] = graph_heads[edge_i] + 1;
 					new_ends[edge_index] = graph_ends[edge_i] + 1;
 					new_weights[edge_index] = graph_weights[edge_i];
@@ -284,17 +288,17 @@ void convert_to_col_major_weight(
 		}
 	}
 	if (side_i != SIDE_LENGTH) {
-		for (unsigned col = 0; col < SIDE_LENGTH; ++col) {
-			for (unsigned row = side_i; row < SIDE_LENGTH; ++row) {
-				unsigned tile_id = row * SIDE_LENGTH + col;
-				unsigned bound_edge_i;
+		for (unsigned long long col = 0; col < SIDE_LENGTH; ++col) {
+			for (unsigned long long row = side_i; row < SIDE_LENGTH; ++row) {
+				unsigned long long tile_id = row * SIDE_LENGTH + col;
+				unsigned long long bound_edge_i;
 				if (NUM_TILES - 1 != tile_id) {
 					bound_edge_i = tile_offsets[tile_id + 1];
 				} else {
 					bound_edge_i = NEDGES;
 				}
 				new_offsets[new_tile_id++] = edge_index;
-				for (unsigned edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
+				for (unsigned long long edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
 					new_heads[edge_index] = graph_heads[edge_i] + 1;
 					new_ends[edge_index] = graph_ends[edge_i] + 1;
 					new_weights[edge_index] = graph_weights[edge_i];
@@ -303,29 +307,29 @@ void convert_to_col_major_weight(
 			}
 		}
 	}
-	printf("Finally, edge_index: %u (NEDGES: %u), new_tile_id: %u (NUM_TILES: %u)\n", edge_index, NEDGES, new_tile_id, NUM_TILES);
+	printf("Finally, edge_index: %llu (NEDGES: %llu), new_tile_id: %llu (NUM_TILES: %llu)\n", edge_index, NEDGES, new_tile_id, NUM_TILES);
 
 	// Write to files
 	string prefix = string(filename) + "_col-" + to_string(ROW_STEP) + "-coo-tiled-" + to_string(TILE_WIDTH);
 	NUM_THREADS = 64;
-	unsigned edge_bound = NEDGES / NUM_THREADS;
+	unsigned long long edge_bound = NEDGES / NUM_THREADS;
 #pragma omp parallel num_threads(NUM_THREADS)
 {
-	unsigned tid = omp_get_thread_num();
-	unsigned offset = tid * edge_bound;
+	unsigned long long tid = omp_get_thread_num();
+	unsigned long long offset = tid * edge_bound;
 	string fname = prefix + "-" + to_string(tid);
 	FILE *fout = fopen(fname.c_str(), "w");
 	if (0 == tid) {
-		fprintf(fout, "%u %u\n", NNODES, NEDGES);
+		fprintf(fout, "%llu %llu\n", NNODES, NEDGES);
 	}
-	unsigned bound_index;
+	unsigned long long bound_index;
 	if (NUM_THREADS - 1 != tid) {
 		bound_index = offset + edge_bound;
 	} else {
 		bound_index = NEDGES;
 	}
-	for (unsigned index = offset; index < bound_index; ++index) {
-		fprintf(fout, "%u %u %u\n", new_heads[index], new_ends[index], new_weights[index]);
+	for (unsigned long long index = offset; index < bound_index; ++index) {
+		fprintf(fout, "%llu %llu %llu\n", new_heads[index], new_ends[index], new_weights[index]);
 	}
 	fclose(fout);
 }
@@ -333,22 +337,22 @@ void convert_to_col_major_weight(
 	// Write offsets
 	string fname = prefix + "-offsets";
 	FILE *fout = fopen(fname.c_str(), "w");
-	for (unsigned i = 0; i < NUM_TILES; ++i) {
-		fprintf(fout, "%u\n", new_offsets[i]);//Format: offset
+	for (unsigned long long i = 0; i < NUM_TILES; ++i) {
+		fprintf(fout, "%llu\n", new_offsets[i]);//Format: offset
 	}
 	fclose(fout);
 	fname = prefix + "-nneibor";
 	fout = fopen(fname.c_str(), "w");
-	for (unsigned i = 0; i < NNODES; ++i) {
-		fprintf(fout, "%u\n", nneibor[i]);
+	for (unsigned long long i = 0; i < NNODES; ++i) {
+		fprintf(fout, "%llu\n", nneibor[i]);
 	}
 	printf("Done.\n");
 
 	//// test
 	//fout = fopen("output.txt", "w");
-	//fprintf(fout, "%u %u\n", NNODES, NEDGES);
-	//for (unsigned i = 0; i < NEDGES; ++i) {
-	//	fprintf(fout, "%u %u\n", new_heads[i], new_ends[i]);
+	//fprintf(fout, "%llu %llu\n", NNODES, NEDGES);
+	//for (unsigned long long i = 0; i < NEDGES; ++i) {
+	//	fprintf(fout, "%llu %llu\n", new_heads[i], new_ends[i]);
 	//}
 	//fclose(fout);
 
@@ -359,34 +363,34 @@ void convert_to_col_major_weight(
 
 void convert_to_col_major(
 						char *filename,
-						unsigned *graph_heads, 
-						unsigned *graph_ends, 
-						unsigned *tile_offsets,
-						unsigned *nneibor)
+						unsigned long long *graph_heads, 
+						unsigned long long *graph_ends, 
+						unsigned long long *tile_offsets,
+						unsigned long long *nneibor)
 {
-	unsigned *new_heads = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	unsigned *new_ends = (unsigned *) malloc(NEDGES * sizeof(unsigned));
-	unsigned *new_offsets = (unsigned *) malloc(NUM_TILES * sizeof(unsigned));
-	//unsigned step = 16;
-	//unsigned step = 2;//test
-	unsigned edge_index = 0;
-	unsigned new_tile_id = 0;
-	unsigned side_i = 0;
+	unsigned long long *new_heads = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	unsigned long long *new_ends = (unsigned long long *) malloc(NEDGES * sizeof(unsigned long long));
+	unsigned long long *new_offsets = (unsigned long long *) malloc(NUM_TILES * sizeof(unsigned long long));
+	//unsigned long long step = 16;
+	//unsigned long long step = 2;//test
+	unsigned long long edge_index = 0;
+	unsigned long long new_tile_id = 0;
+	unsigned long long side_i = 0;
 
 	printf("Converting...\n");
 
 	for (side_i = 0; side_i + ROW_STEP <= SIDE_LENGTH; side_i += ROW_STEP) {
-		for (unsigned col = 0; col < SIDE_LENGTH; ++col) {
-			for (unsigned row = side_i; row < side_i + ROW_STEP; ++row) {
-				unsigned tile_id = row * SIDE_LENGTH + col;
-				unsigned bound_edge_i;
+		for (unsigned long long col = 0; col < SIDE_LENGTH; ++col) {
+			for (unsigned long long row = side_i; row < side_i + ROW_STEP; ++row) {
+				unsigned long long tile_id = row * SIDE_LENGTH + col;
+				unsigned long long  bound_edge_i;
 				if (NUM_TILES - 1 != tile_id) {
 					bound_edge_i = tile_offsets[tile_id + 1];
 				} else {
 					bound_edge_i = NEDGES;
 				}
 				new_offsets[new_tile_id++] = edge_index;
-				for (unsigned edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
+				for (unsigned long long edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
 					new_heads[edge_index] = graph_heads[edge_i] + 1;
 					new_ends[edge_index] = graph_ends[edge_i] + 1;
 					++edge_index;
@@ -395,17 +399,17 @@ void convert_to_col_major(
 		}
 	}
 	if (side_i != SIDE_LENGTH) {
-		for (unsigned col = 0; col < SIDE_LENGTH; ++col) {
-			for (unsigned row = side_i; row < SIDE_LENGTH; ++row) {
-				unsigned tile_id = row * SIDE_LENGTH + col;
-				unsigned bound_edge_i;
+		for (unsigned long long col = 0; col < SIDE_LENGTH; ++col) {
+			for (unsigned long long row = side_i; row < SIDE_LENGTH; ++row) {
+				unsigned long long tile_id = row * SIDE_LENGTH + col;
+				unsigned long long bound_edge_i;
 				if (NUM_TILES - 1 != tile_id) {
 					bound_edge_i = tile_offsets[tile_id + 1];
 				} else {
 					bound_edge_i = NEDGES;
 				}
 				new_offsets[new_tile_id++] = edge_index;
-				for (unsigned edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
+				for (unsigned long long edge_i = tile_offsets[tile_id]; edge_i < bound_edge_i; ++edge_i) {
 					new_heads[edge_index] = graph_heads[edge_i] + 1;
 					new_ends[edge_index] = graph_ends[edge_i] + 1;
 					++edge_index;
@@ -413,29 +417,29 @@ void convert_to_col_major(
 			}
 		}
 	}
-	printf("Finally, edge_index: %u (NEDGES: %u), new_tile_id: %u (NUM_TILES: %u)\n", edge_index, NEDGES, new_tile_id, NUM_TILES);
+	printf("Finally, edge_index: %llu (NEDGES: %llu), new_tile_id: %llu (NUM_TILES: %llu)\n", edge_index, NEDGES, new_tile_id, NUM_TILES);
 
 	// Write to files
 	string prefix = string(filename) + "_col-" + to_string(ROW_STEP) + "-coo-tiled-" + to_string(TILE_WIDTH);
 	NUM_THREADS = 64;
-	unsigned edge_bound = NEDGES / NUM_THREADS;
+	unsigned long long edge_bound = NEDGES / NUM_THREADS;
 #pragma omp parallel num_threads(NUM_THREADS)
 {
-	unsigned tid = omp_get_thread_num();
-	unsigned offset = tid * edge_bound;
+	unsigned long long tid = omp_get_thread_num();
+	unsigned long long offset = tid * edge_bound;
 	string fname = prefix + "-" + to_string(tid);
 	FILE *fout = fopen(fname.c_str(), "w");
 	if (0 == tid) {
-		fprintf(fout, "%u %u\n", NNODES, NEDGES);
+		fprintf(fout, "%llu %llu\n", NNODES, NEDGES);
 	}
-	unsigned bound_index;
+	unsigned long long bound_index;
 	if (NUM_THREADS - 1 != tid) {
 		bound_index = offset + edge_bound;
 	} else {
 		bound_index = NEDGES;
 	}
-	for (unsigned index = offset; index < bound_index; ++index) {
-		fprintf(fout, "%u %u\n", new_heads[index], new_ends[index]);
+	for (unsigned long long index = offset; index < bound_index; ++index) {
+		fprintf(fout, "%llu %llu\n", new_heads[index], new_ends[index]);
 	}
 	fclose(fout);
 }
@@ -443,22 +447,22 @@ void convert_to_col_major(
 	// Write offsets
 	string fname = prefix + "-offsets";
 	FILE *fout = fopen(fname.c_str(), "w");
-	for (unsigned i = 0; i < NUM_TILES; ++i) {
-		fprintf(fout, "%u\n", new_offsets[i]);//Format: offset
+	for (unsigned long long i = 0; i < NUM_TILES; ++i) {
+		fprintf(fout, "%llu\n", new_offsets[i]);//Format: offset
 	}
 	fclose(fout);
 	fname = prefix + "-nneibor";
 	fout = fopen(fname.c_str(), "w");
-	for (unsigned i = 0; i < NNODES; ++i) {
-		fprintf(fout, "%u\n", nneibor[i]);
+	for (unsigned long long i = 0; i < NNODES; ++i) {
+		fprintf(fout, "%llu\n", nneibor[i]);
 	}
 	printf("Done.\n");
 
 	//// test
 	//fout = fopen("output.txt", "w");
-	//fprintf(fout, "%u %u\n", NNODES, NEDGES);
+	//fprintf(fout, "%llu %llu\n", NNODES, NEDGES);
 	//for (unsigned i = 0; i < NEDGES; ++i) {
-	//	fprintf(fout, "%u %u\n", new_heads[i], new_ends[i]);
+	//	fprintf(fout, "%llu %llu\n", new_heads[i], new_ends[i]);
 	//}
 	//fclose(fout);
 
@@ -470,8 +474,8 @@ int main(int argc, char *argv[])
 {
 	start = omp_get_wtime();
 	char *filename;
-	unsigned min_row_step;
-	unsigned max_row_step;
+	unsigned long long min_row_step;
+	unsigned long long max_row_step;
 
 	if (argc > 4) {
 		filename = argv[1];
@@ -488,13 +492,13 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	// Input
-	unsigned *graph_heads;
-	unsigned *graph_ends;
-	unsigned *tile_offsets;
-	unsigned *nneibor;
+	unsigned long long *graph_heads;
+	unsigned long long *graph_ends;
+	unsigned long long *tile_offsets;
+	unsigned long long *nneibor;
 	int *is_empty_tile;
 
-	unsigned *graph_weights = nullptr;
+	unsigned long long *graph_weights = nullptr;
 
 #ifdef WEIGHTED
 	input_weighted(
